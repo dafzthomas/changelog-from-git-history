@@ -1,0 +1,46 @@
+{
+  "name": "changelog-from-git-history",
+  "version": "0.1.0",
+  "description": "Generate clean changelogs from local Git history.",
+  "type": "module",
+  "main": "./dist/cli/index.js",
+  "types": "./dist/cli/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cli/index.d.ts",
+      "default": "./dist/cli/index.js"
+    }
+  },
+  "bin": {
+    "changelog-from-git-history": "./dist/cli/index.js",
+    "git-changelog-fast": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "examples"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "changelog",
+    "git",
+    "release-notes",
+    "cli"
+  ],
+  "license": "MIT",
+  "packageManager": "npm@11.11.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^4.1.8"
+  }
+}
