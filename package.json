@@ -20,8 +20,8 @@
     }
   },
   "bin": {
-    "changelog-from-git-history": "./dist/cli/index.js",
-    "git-changelog-fast": "./dist/cli/index.js"
+    "changelog-from-git-history": "dist/cli/index.js",
+    "git-changelog-fast": "dist/cli/index.js"
   },
   "files": [
     "dist",
