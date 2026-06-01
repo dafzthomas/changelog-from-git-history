@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { constants } from "node:fs";
+import { constants, realpathSync } from "node:fs";
 import { access, readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { insertChangelogSection } from "../changelog/insert.js";
 import { generateChangelog } from "../core/generate.js";
 import { GitCommandError } from "../git/git.js";
@@ -111,7 +111,19 @@ function formatCliError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+export function isDirectCliExecution(moduleUrl: string, argvPath: string | undefined): boolean {
+  if (!argvPath) {
+    return false;
+  }
+
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(argvPath);
+  } catch {
+    return false;
+  }
+}
+
+if (isDirectCliExecution(import.meta.url, process.argv[1])) {
   runCli().then((exitCode) => {
     process.exitCode = exitCode;
   });
