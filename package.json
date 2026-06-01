@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "Generate clean changelogs from local Git history.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dafzthomas/changelog-from-git-history.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dafzthomas/changelog-from-git-history/issues"
+  },
+  "homepage": "https://github.com/dafzthomas/changelog-from-git-history#readme",
   "main": "./dist/cli/index.js",
   "types": "./dist/cli/index.d.ts",
   "exports": {
@@ -19,6 +27,9 @@
     "dist",
     "README.md",
     "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "examples"
   ],
   "scripts": {
