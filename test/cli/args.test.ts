@@ -33,6 +33,10 @@ describe("parseCliArgs", () => {
     );
   });
 
+  it("accepts the release-notes format", () => {
+    expect(parseCliArgs(["--format", "release-notes"]).format).toBe("release-notes");
+  });
+
   it("rejects unsupported formats and unknown flags", () => {
     expect(() => parseCliArgs(["--format", "html"])).toThrow("Unsupported format");
     expect(() => parseCliArgs(["--wat"])).toThrow("Unknown option");

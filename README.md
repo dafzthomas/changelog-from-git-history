@@ -11,7 +11,7 @@ Alias: `git-changelog-fast`
 - Classifies changes into readable sections (features, fixes, docs, dependencies, etc.)
 - Detects breaking changes and places them in a dedicated section
 - Adds commit hashes and authors to each entry
-- Renders output in Markdown (default) or JSON
+- Renders output in Markdown (default), JSON, or compact GitHub release notes
 - Optionally enriches entries with GitHub PR metadata when available
 
 ## Install
@@ -74,6 +74,8 @@ When Markdown output is enabled:
 
 When JSON output is selected, it writes raw JSON content to the file.
 
+When `release-notes` is selected, it writes that body to the file and does not update a changelog.
+
 ```bash
 changelog-from-git-history --output CHANGELOG.md
 ```
@@ -84,16 +86,42 @@ Useful with `--output`: print the generated content to stdout while still writin
 
 Without `--output`, output goes to stdout anyway, so `--stdout` is effectively harmlessly redundant.
 
-### `--format markdown|json`
+### `--format markdown|json|release-notes`
 
-Select output format.
+Select the output format.
 
 - `markdown` (default): human-readable changelog with sections
 - `json`: structured result matching the internal `ChangelogData` payload
+- `release-notes`: a compact GitHub Releases body you can paste into a release. It includes breaking changes, one group per change type, contributors, and a full-changelog line. It does not publish the release.
+
+`release-notes` prints that body to stdout. With `--output`, it writes the body as its own file and does not insert it into a changelog.
 
 ```bash
+changelog-from-git-history --format release-notes
+changelog-from-git-history --format release-notes --since v1.2.0
 changelog-from-git-history --format json
 changelog-from-git-history --format json --output release-notes.json
+```
+
+A sample body is in `examples/release-notes.md`:
+
+```markdown
+## What's Changed
+
+### Breaking Changes
+
+* Changed the auth token format. API clients must send Bearer tokens. by Alice in [abc1234](https://github.com/acme/tool/commit/abc123456)
+
+### Features
+
+* Added import support for JSONL usage logs. by @bob in [#14](https://github.com/acme/tool/pull/14)
+
+## Contributors
+
+* Alice
+* Bob
+
+**Full Changelog**: [v1.2.2...HEAD](https://github.com/acme/tool/compare/v1.2.2...HEAD)
 ```
 
 ### `--github`

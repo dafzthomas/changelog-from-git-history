@@ -1,5 +1,6 @@
 import type { ChangelogData, ChangelogEntry } from "./aggregate.js";
 import { classifyCommit } from "./classify.js";
+import type { OutputFormat } from "./format.js";
 import { assertGitRepository } from "../git/git.js";
 import { readCommits } from "../git/commits.js";
 import { resolveCommitRange } from "../git/range.js";
@@ -7,14 +8,13 @@ import { getOriginGitHubRemote } from "../git/remote-info.js";
 import { enrichWithGitHub } from "../github/enrich.js";
 import { renderJson } from "../render/json.js";
 import { renderMarkdown } from "../render/markdown.js";
-
-export type ChangelogFormat = "markdown" | "json";
+import { renderReleaseNotes } from "../render/release-notes.js";
 
 export type GenerateChangelogOptions = {
   cwd: string;
   since?: string;
   range?: string;
-  format?: ChangelogFormat;
+  format?: OutputFormat;
   github?: boolean;
   date?: string;
 };
@@ -63,8 +63,19 @@ export async function generateChangelog(
 
   return {
     data,
-    content: (options.format ?? "markdown") === "json" ? renderJson(data) : renderMarkdown(data)
+    content: renderChangelog(options.format ?? "markdown", data)
   };
+}
+
+function renderChangelog(format: OutputFormat, data: ChangelogData): string {
+  switch (format) {
+    case "markdown":
+      return renderMarkdown(data);
+    case "json":
+      return renderJson(data);
+    case "release-notes":
+      return renderReleaseNotes(data);
+  }
 }
 
 async function resolveGitHubEnrichment(

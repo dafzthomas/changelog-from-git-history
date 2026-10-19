@@ -1,4 +1,4 @@
-export type OutputFormat = "markdown" | "json";
+import { isOutputFormat, OUTPUT_FORMATS, outputFormatList, type OutputFormat } from "../core/format.js";
 
 export type CliOptions = {
   since?: string;
@@ -11,8 +11,6 @@ export type CliOptions = {
   help: boolean;
   version: boolean;
 };
-
-const FORMATS = new Set<OutputFormat>(["markdown", "json"]);
 
 export function parseCliArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
@@ -43,10 +41,10 @@ export function parseCliArgs(argv: string[]): CliOptions {
         break;
       case "--format": {
         const format = readValue(argv, ++index, "--format");
-        if (!FORMATS.has(format as OutputFormat)) {
-          throw new Error(`Unsupported format "${format}". Expected markdown or json.`);
+        if (!isOutputFormat(format)) {
+          throw new Error(`Unsupported format "${format}". Expected ${outputFormatList()}.`);
         }
-        options.format = format as OutputFormat;
+        options.format = format;
         break;
       }
       case "--github":
@@ -93,7 +91,7 @@ Options:
   --range <from..to>         Generate for an explicit Git revision range
   --output, -o <file>        Write or update a changelog file
   --stdout                   Print only the generated output
-  --format <markdown|json>   Output format (default: markdown)
+  --format <${OUTPUT_FORMATS.join("|")}>  Output format (default: markdown)
   --github                   Try to enrich output with GitHub PR metadata
   --dry-run                  Preview output without writing files
   --help, -h                 Show help
