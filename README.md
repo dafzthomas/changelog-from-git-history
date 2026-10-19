@@ -98,16 +98,18 @@ changelog-from-git-history --format json --output release-notes.json
 
 ### `--github`
 
-Attempts optional GitHub enrichment:
+Replaces a matching commit subject with the GitHub pull request title. The CLI calls `gh` only when you pass this flag.
 
-- Reads `origin` remote (if it is GitHub)
-- Uses `gh` CLI when installed and authenticated
-- Uses PR metadata for commit lines matching `(#123)` patterns where possible
+Supported subjects:
 
-This is optional and not required. If enrichment cannot run, it continues with local data and warns:
+- Squash suffixes, with an optional trailing `.`, `!`, or `?`. For example, `Add export (#123)` and `Correct parser (#123).`
+- Merge subjects. For example, `Merge pull request #123` and `Merge pull request #123 from owner/branch`.
+
+`origin` must be a GitHub remote. `gh` must be installed and authenticated. If enrichment cannot run, the CLI still prints the changelog from local commits and writes a warning to stderr:
 
 ```text
 GitHub enrichment requested, but gh is unavailable or not authenticated.
+Could not fetch GitHub PR metadata for #123.
 ```
 
 ### `--dry-run`
@@ -183,7 +185,6 @@ npm run build
 
 - Add richer templates for Markdown/JSON consumers
 - Add optional section toggles and filtering by type
-- Improve PR-matching heuristics for non-`(#123)` merge formats
 - Add CI guidance and publish release notes helpers
 
 ## Contributing
