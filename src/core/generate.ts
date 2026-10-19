@@ -17,6 +17,7 @@ export type GenerateChangelogOptions = {
   format?: ChangelogFormat;
   github?: boolean;
   date?: string;
+  version?: string;
 };
 
 export type GenerateChangelogResult = {
@@ -54,6 +55,7 @@ export async function generateChangelog(
   const enrichment = await resolveGitHubEnrichment(options, entries, remote !== null);
 
   const data: ChangelogData = {
+    ...(options.version ? { version: options.version } : {}),
     date: options.date ?? new Date().toISOString().slice(0, 10),
     range: resolvedRange.displayRange,
     entries: enrichment.entries,
