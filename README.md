@@ -120,12 +120,31 @@ changelog-from-git-history --output CHANGELOG.md --dry-run
 
 You’ll see a preview in stdout and a non-writing warning on stderr.
 
-### `--help`, `--version`
+### `--help`, `-h`
 
 ```bash
 changelog-from-git-history --help
+```
+
+### `--version [version]`, `-v`
+
+With no value, the command prints the CLI version and exits.
+
+```bash
 changelog-from-git-history --version
 ```
+
+With a version, the section heading uses that version instead of `Unreleased`. The heading date is the UTC date of the run, formatted as `YYYY-MM-DD`.
+
+```bash
+changelog-from-git-history --version 1.2.3 --since v1.2.2 --output CHANGELOG.md
+```
+
+```markdown
+## 1.2.3 - YYYY-MM-DD
+```
+
+If `CHANGELOG.md` already has that Git range, the command leaves the file unchanged.
 
 ## Output examples
 
