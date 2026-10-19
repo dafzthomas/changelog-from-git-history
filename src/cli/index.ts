@@ -43,7 +43,8 @@ export async function runCli(argv = process.argv.slice(2), runtime: CliRuntime =
       since: options.since,
       range: options.range,
       format: options.format,
-      github: options.github
+      github: options.github,
+      ...(options.categories !== undefined ? { categories: options.categories } : {})
     });
 
     for (const warning of result.data.warnings) {
