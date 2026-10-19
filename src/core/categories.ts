@@ -35,3 +35,22 @@ export const CATEGORY_ORDER: ChangeCategory[] = [
   "maintenance",
   "other"
 ];
+
+export function parseCategoryName(name: string): ChangeCategory {
+  const trimmed = name.trim();
+  if (trimmed === "") {
+    throw new Error("Expected a category name.");
+  }
+
+  if (!isChangeCategory(trimmed)) {
+    throw new Error(
+      `Unknown category "${trimmed}". Expected one of: ${CATEGORY_ORDER.join(", ")}.`
+    );
+  }
+
+  return trimmed;
+}
+
+function isChangeCategory(value: string): value is ChangeCategory {
+  return CATEGORY_ORDER.some((category) => category === value);
+}
