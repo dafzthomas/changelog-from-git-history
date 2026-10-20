@@ -92,7 +92,7 @@ Select the output format.
 
 - `markdown` (default): human-readable changelog with sections
 - `json`: structured result matching the internal `ChangelogData` payload
-- `release-notes`: a compact GitHub Releases body you can paste into a release. It includes breaking changes, one group per change type, contributors, and a full-changelog line. It does not publish the release.
+- `release-notes`: a compact GitHub Releases body you can paste into a release. It includes breaking changes, one group per change type, contributors, and a full-changelog line. It does not print a version heading, and it does not publish the release. The release title on GitHub is the version.
 
 `release-notes` prints that body to stdout. With `--output`, it writes the body as its own file and does not insert it into a changelog.
 
@@ -121,7 +121,7 @@ A sample body is in `examples/release-notes.md`:
 * Alice
 * Bob
 
-**Full Changelog**: [v1.2.2...HEAD](https://github.com/acme/tool/compare/v1.2.2...HEAD)
+**Full Changelog**: [v1.2.2...abc123456](https://github.com/acme/tool/compare/v1.2.2...abc123456)
 ```
 
 ### `--github`
@@ -149,6 +149,10 @@ changelog-from-git-history --output CHANGELOG.md --dry-run
 You’ll see a preview in stdout and a non-writing warning on stderr.
 
 ### `--help`, `--version`
+
+`--help` prints the flags. `--version` prints the CLI version and exits. It does not set the changelog heading.
+
+Markdown output is the only format with a version heading. That heading is `Unreleased` unless a caller supplies a version to the generator. `--format release-notes` does not print a version heading.
 
 ```bash
 changelog-from-git-history --help

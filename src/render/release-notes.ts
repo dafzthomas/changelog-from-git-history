@@ -94,12 +94,26 @@ function releaseLink(entry: ChangelogEntry): string | null {
 }
 
 function formatFullChangelog(range: ChangelogRange, entries: readonly ChangelogEntry[]): string {
-  const label = `${range.from}...${range.to}`;
-  const compareUrl = githubCompareUrl(range, entries);
+  const to = compareTarget(range, entries);
+  const label = `${range.from}...${to}`;
+  const compareUrl = githubCompareUrl(range, entries, to);
   return compareUrl ? `[${label}](${compareUrl})` : label;
 }
 
-function githubCompareUrl(range: ChangelogRange, entries: readonly ChangelogEntry[]): string | null {
+function compareTarget(range: ChangelogRange, entries: readonly ChangelogEntry[]): string {
+  if (range.to !== "HEAD") {
+    return range.to;
+  }
+
+  // Commits arrive oldest-first, so the last hash is the revision HEAD names.
+  return entries.at(-1)?.hash ?? range.to;
+}
+
+function githubCompareUrl(
+  range: ChangelogRange,
+  entries: readonly ChangelogEntry[],
+  to: string
+): string | null {
   for (const entry of entries) {
     const commitUrl = entry.commitUrl;
     if (!commitUrl) {
@@ -111,7 +125,7 @@ function githubCompareUrl(range: ChangelogRange, entries: readonly ChangelogEntr
       continue;
     }
 
-    return `${match[1]}/compare/${encodeURIComponent(range.from)}...${encodeURIComponent(range.to)}`;
+    return `${match[1]}/compare/${encodeURIComponent(range.from)}...${encodeURIComponent(to)}`;
   }
 
   return null;

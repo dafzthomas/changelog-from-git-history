@@ -32,7 +32,7 @@ function commit(cwd: string, message: string, body?: string): string {
   return git(cwd, ["rev-parse", "--short", "HEAD"]);
 }
 
-function createRepo(): { cwd: string; feature: string; fix: string; docs: string } {
+function createRepo(): { cwd: string; feature: string; fix: string; docs: string; tip: string } {
   const cwd = mkdtempSync(join(tmpdir(), "cfg-release-notes-"));
   git(cwd, ["init", "--quiet"]);
   git(cwd, ["config", "user.name", "Riley"]);
@@ -42,7 +42,8 @@ function createRepo(): { cwd: string; feature: string; fix: string; docs: string
   const feature = commit(cwd, "feat: add export command");
   const fix = commit(cwd, "fix!: change config file format", "BREAKING CHANGE: Config files must use JSON.");
   const docs = commit(cwd, "docs: update the readme");
-  return { cwd, feature, fix, docs };
+  const tip = git(cwd, ["rev-parse", "HEAD"]);
+  return { cwd, feature, fix, docs, tip };
 }
 
 function runCli(cwd: string, args: string[]) {
@@ -69,6 +70,7 @@ describe("release notes CLI", () => {
 
     expect(help.status).toBe(0);
     expect(help.stdout).toContain("--format <markdown|json|release-notes>");
+    expect(help.stdout).toContain("release-notes does not print one");
 
     expect(changelog.status).toBe(0);
     expect(explicitMarkdown.status).toBe(0);
@@ -98,8 +100,9 @@ describe("release notes CLI", () => {
 
 * Riley
 
-**Full Changelog**: v0.1.0...HEAD
+**Full Changelog**: v0.1.0...${repo.tip}
 `);
+    expect(notes.stdout).not.toContain("...HEAD");
     expect(notes.stdout).not.toContain("<!-- changelog-from-git-history:");
     expect(notes.stdout).not.toContain("## Unreleased");
   });

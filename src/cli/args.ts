@@ -95,6 +95,9 @@ Options:
   --github                   Try to enrich output with GitHub PR metadata
   --dry-run                  Preview output without writing files
   --help, -h                 Show help
-  --version, -v              Show version
+  --version, -v              Print the CLI version and exit
+
+--version does not set the changelog heading. Markdown is the only
+format with a version heading. --format release-notes does not print one.
 `;
 }

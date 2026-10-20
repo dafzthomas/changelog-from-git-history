@@ -51,6 +51,33 @@ describe("renderReleaseNotes", () => {
     expect(notes).not.toContain("2026-06-01");
     expect(notes).not.toContain("No semver-like tag found");
     expect(notes).not.toContain("<!-- changelog-from-git-history:");
+    expect(notes).toContain(
+      "**Full Changelog**: [v1.2.2...abc123456](https://github.com/acme/tool/compare/v1.2.2...abc123456)"
+    );
+    expect(notes).not.toContain("HEAD");
+  });
+
+  it("keeps an explicit range end in the compare link", () => {
+    const notes = renderReleaseNotes({
+      range: { from: "v1.0.0", to: "v1.1.0" },
+      entries: [
+        {
+          category: "features",
+          summary: "Add export",
+          hash: "def567890abcdef",
+          shortHash: "def5678",
+          commitUrl: "https://github.com/acme/tool/commit/def567890abcdef",
+          author: "Casey"
+        }
+      ],
+      contributors: ["Casey"],
+      warnings: []
+    });
+
+    expect(notes).toContain(
+      "**Full Changelog**: [v1.0.0...v1.1.0](https://github.com/acme/tool/compare/v1.0.0...v1.1.0)"
+    );
+    expect(notes).not.toContain("compare/v1.0.0...def567890abcdef");
   });
 
   it("omits empty sections and a generic breaking fallback", () => {
