@@ -17,6 +17,7 @@ export type GenerateChangelogOptions = {
   format?: ChangelogFormat;
   github?: boolean;
   date?: string;
+  env?: NodeJS.ProcessEnv;
   version?: string;
 };
 
@@ -85,5 +86,5 @@ async function resolveGitHubEnrichment(
     };
   }
 
-  return enrichWithGitHub(entries, options.cwd);
+  return enrichWithGitHub(entries, options.cwd, options.env);
 }
