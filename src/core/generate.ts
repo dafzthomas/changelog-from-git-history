@@ -9,7 +9,7 @@ import { getOriginGitHubRemote } from "../git/remote-info.js";
 import { enrichWithGitHub } from "../github/enrich.js";
 import { renderJson } from "../render/json.js";
 import { renderMarkdown } from "../render/markdown.js";
-import { renderReleaseNotes } from "../render/release-notes.js";
+import { renderReleaseNotes, type ReleaseNotesCompare } from "../render/release-notes.js";
 
 export type GenerateChangelogOptions = {
   cwd: string;
@@ -54,6 +54,12 @@ export async function generateChangelog(
     };
   });
 
+  const tip = classifiedEntries.at(-1);
+  const compare: ReleaseNotesCompare = {
+    to: resolvedRange.displayRange.to === "HEAD" ? (tip?.hash ?? "HEAD") : resolvedRange.displayRange.to,
+    ...(tip?.commitUrl ? { commitUrl: tip.commitUrl } : {})
+  };
+
   const categories = options.categories;
   const entries =
     categories === undefined
@@ -76,18 +82,22 @@ export async function generateChangelog(
 
   return {
     data,
-    content: renderChangelog(options.format ?? "markdown", data)
+    content: renderChangelog(options.format ?? "markdown", data, compare)
   };
 }
 
-function renderChangelog(format: OutputFormat, data: ChangelogData): string {
+function renderChangelog(
+  format: OutputFormat,
+  data: ChangelogData,
+  compare: ReleaseNotesCompare
+): string {
   switch (format) {
     case "markdown":
       return renderMarkdown(data);
     case "json":
       return renderJson(data);
     case "release-notes":
-      return renderReleaseNotes(data);
+      return renderReleaseNotes(data, compare);
   }
 }
 

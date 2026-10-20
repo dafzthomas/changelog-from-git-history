@@ -3,7 +3,12 @@ import { CATEGORY_LABELS, CATEGORY_ORDER } from "../core/categories.js";
 
 const GENERIC_BREAKING_DESCRIPTION = "Breaking change.";
 
-export function renderReleaseNotes(data: ChangelogData): string {
+export type ReleaseNotesCompare = {
+  to: string;
+  commitUrl?: string;
+};
+
+export function renderReleaseNotes(data: ChangelogData, compare?: ReleaseNotesCompare): string {
   const lines: string[] = ["## What's Changed"];
   const breakingEntries = data.entries.filter((entry) => entry.breaking);
 
@@ -30,7 +35,7 @@ export function renderReleaseNotes(data: ChangelogData): string {
   }
 
   if (data.range) {
-    lines.push("", `**Full Changelog**: ${formatFullChangelog(data.range, data.entries)}`);
+    lines.push("", `**Full Changelog**: ${formatFullChangelog(data.range, data.entries, compare)}`);
   }
 
   return `${lines.join("\n")}\n`;
@@ -93,10 +98,14 @@ function releaseLink(entry: ChangelogEntry): string | null {
   return hashLabel ?? null;
 }
 
-function formatFullChangelog(range: ChangelogRange, entries: readonly ChangelogEntry[]): string {
-  const to = compareTarget(range, entries);
+function formatFullChangelog(
+  range: ChangelogRange,
+  entries: readonly ChangelogEntry[],
+  compare?: ReleaseNotesCompare
+): string {
+  const to = compare?.to ?? compareTarget(range, entries);
   const label = `${range.from}...${to}`;
-  const compareUrl = githubCompareUrl(range, entries, to);
+  const compareUrl = githubCompareUrl(range, entries, to, compare?.commitUrl);
   return compareUrl ? `[${label}](${compareUrl})` : label;
 }
 
@@ -105,22 +114,25 @@ function compareTarget(range: ChangelogRange, entries: readonly ChangelogEntry[]
     return range.to;
   }
 
-  // Commits arrive oldest-first, so the last hash is the revision HEAD names.
+  // Fallback when generate did not pass the unfiltered tip. Commits arrive oldest-first.
   return entries.at(-1)?.hash ?? range.to;
 }
 
 function githubCompareUrl(
   range: ChangelogRange,
   entries: readonly ChangelogEntry[],
-  to: string
+  to: string,
+  commitUrl?: string
 ): string | null {
+  const commitUrls = commitUrl ? [commitUrl] : [];
   for (const entry of entries) {
-    const commitUrl = entry.commitUrl;
-    if (!commitUrl) {
-      continue;
+    if (entry.commitUrl) {
+      commitUrls.push(entry.commitUrl);
     }
+  }
 
-    const match = /^(https:\/\/github\.com\/[^/]+\/[^/]+)\/commit\/[0-9a-f]+$/i.exec(commitUrl);
+  for (const candidate of commitUrls) {
+    const match = /^(https:\/\/github\.com\/[^/]+\/[^/]+)\/commit\/[0-9a-f]+$/i.exec(candidate);
     if (!match) {
       continue;
     }

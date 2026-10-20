@@ -107,6 +107,27 @@ describe("release notes CLI", () => {
     expect(notes.stdout).not.toContain("## Unreleased");
   });
 
+  it("keeps the full tip when a HEAD range is category-filtered", () => {
+    const repo = createRepo();
+    git(repo.cwd, ["remote", "add", "origin", "https://github.com/acme/widgets.git"]);
+    const link = `**Full Changelog**: [v0.1.0...${repo.tip}](https://github.com/acme/widgets/compare/v0.1.0...${repo.tip})`;
+    const included = runCli(repo.cwd, ["--format", "release-notes", "--include", "features"]);
+    const excluded = runCli(repo.cwd, ["--format", "release-notes", "--exclude", "documentation"]);
+    const empty = runCli(repo.cwd, ["--format", "release-notes", "--include", "performance"]);
+    const markdown = runCli(repo.cwd, ["--include", "features"]);
+
+    expect(included.status).toBe(0);
+    expect(excluded.status).toBe(0);
+    expect(empty.status).toBe(0);
+    expect(included.stdout).toContain(link);
+    expect(excluded.stdout).toContain(link);
+    expect(empty.stdout).toContain(link);
+    expect(included.stdout).not.toContain("...HEAD");
+    expect(excluded.stdout).not.toContain("...HEAD");
+    expect(empty.stdout).not.toContain("...HEAD");
+    expect(markdown.stdout).toContain("<!-- changelog-from-git-history: v0.1.0..HEAD -->");
+  });
+
   it("writes the release body without inserting a changelog heading", () => {
     const repo = createRepo();
     const printed = runCli(repo.cwd, ["--format", "release-notes"]);
