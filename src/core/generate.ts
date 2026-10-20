@@ -1,4 +1,5 @@
 import type { ChangelogData, ChangelogEntry } from "./aggregate.js";
+import type { ChangeCategory } from "./categories.js";
 import { classifyCommit } from "./classify.js";
 import type { OutputFormat } from "./format.js";
 import { assertGitRepository } from "../git/git.js";
@@ -17,6 +18,9 @@ export type GenerateChangelogOptions = {
   format?: OutputFormat;
   github?: boolean;
   date?: string;
+  categories?: ReadonlySet<ChangeCategory>;
+  env?: NodeJS.ProcessEnv;
+  version?: string;
 };
 
 export type GenerateChangelogResult = {
@@ -36,7 +40,7 @@ export async function generateChangelog(
   const commits = await readCommits(options.cwd, resolvedRange.logRange);
   const remote = await getOriginGitHubRemote(options.cwd);
 
-  const entries: ChangelogEntry[] = commits.map((commit) => {
+  const classifiedEntries: ChangelogEntry[] = commits.map((commit) => {
     const classified = classifyCommit(commit);
     return {
       category: classified.category,
@@ -50,10 +54,19 @@ export async function generateChangelog(
     };
   });
 
-  const contributors = [...new Set(commits.map((commit) => commit.authorName).filter(Boolean))];
+  const categories = options.categories;
+  const entries =
+    categories === undefined
+      ? classifiedEntries
+      : classifiedEntries.filter((entry) => categories.has(entry.category));
   const enrichment = await resolveGitHubEnrichment(options, entries, remote !== null);
+  const contributors =
+    categories === undefined
+      ? [...new Set(commits.map((commit) => commit.authorName).filter(Boolean))]
+      : firstSeenAuthors(enrichment.entries);
 
   const data: ChangelogData = {
+    ...(options.version ? { version: options.version } : {}),
     date: options.date ?? new Date().toISOString().slice(0, 10),
     range: resolvedRange.displayRange,
     entries: enrichment.entries,
@@ -78,6 +91,22 @@ function renderChangelog(format: OutputFormat, data: ChangelogData): string {
   }
 }
 
+function firstSeenAuthors(entries: readonly ChangelogEntry[]): string[] {
+  const authors: string[] = [];
+  const seen = new Set<string>();
+
+  for (const entry of entries) {
+    const author = entry.author;
+    if (!author || seen.has(author)) {
+      continue;
+    }
+    seen.add(author);
+    authors.push(author);
+  }
+
+  return authors;
+}
+
 async function resolveGitHubEnrichment(
   options: GenerateChangelogOptions,
   entries: ChangelogEntry[],
@@ -94,5 +123,5 @@ async function resolveGitHubEnrichment(
     };
   }
 
-  return enrichWithGitHub(entries, options.cwd);
+  return enrichWithGitHub(entries, options.cwd, options.env);
 }
