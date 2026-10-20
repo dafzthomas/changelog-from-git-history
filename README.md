@@ -130,16 +130,18 @@ changelog-from-git-history --include features,fixes,documentation --exclude docu
 
 ### `--github`
 
-Attempts optional GitHub enrichment:
+Replaces a matching commit subject with the GitHub pull request title. The CLI calls `gh` only when you pass this flag.
 
-- Reads `origin` remote (if it is GitHub)
-- Uses `gh` CLI when installed and authenticated
-- Uses PR metadata for commit lines matching `(#123)` patterns where possible
+Supported subjects:
 
-This is optional and not required. If enrichment cannot run, it continues with local data and warns:
+- Squash suffixes, with an optional trailing `.`, `!`, or `?`. For example, `Add export (#123)` and `Correct parser (#123).`
+- Merge subjects. For example, `Merge pull request #123` and `Merge pull request #123 from owner/branch`.
+
+`origin` must be a GitHub remote. `gh` must be installed and authenticated. If enrichment cannot run, the CLI still prints the changelog from local commits and writes a warning to stderr:
 
 ```text
 GitHub enrichment requested, but gh is unavailable or not authenticated.
+Could not fetch GitHub PR metadata for #123.
 ```
 
 ### `--dry-run`
@@ -152,12 +154,31 @@ changelog-from-git-history --output CHANGELOG.md --dry-run
 
 You’ll see a preview in stdout and a non-writing warning on stderr.
 
-### `--help`, `--version`
+### `--help`, `-h`
 
 ```bash
 changelog-from-git-history --help
+```
+
+### `--version [version]`, `-v`
+
+With no value, the command prints the CLI version and exits.
+
+```bash
 changelog-from-git-history --version
 ```
+
+With a version, the section heading uses that version instead of `Unreleased`. The heading date is the UTC date of the run, formatted as `YYYY-MM-DD`.
+
+```bash
+changelog-from-git-history --version 1.2.3 --since v1.2.2 --output CHANGELOG.md
+```
+
+```markdown
+## 1.2.3 - YYYY-MM-DD
+```
+
+If `CHANGELOG.md` already has that Git range, the command leaves the file unchanged.
 
 ## Output examples
 
@@ -203,6 +224,10 @@ The CLI still classifies these into useful buckets (for example Features, Fixes,
 - If no GitHub link is available (non-GitHub remote), it still renders cleanly and omits links.
 - Entry order is stable enough for review and release notes, with breaking changes promoted first.
 
+## Covered repository shapes
+
+Local fixture tests cover squash merges, repositories with no tags, non-GitHub remotes, breaking-change footers, and one small project history. [Repository shapes](docs/repo-shapes.md) lists each history. Those tests do not use the network.
+
 ## Development checks
 
 ```bash
@@ -214,7 +239,6 @@ npm run build
 ## Roadmap
 
 - Add richer templates for Markdown/JSON consumers
-- Improve PR-matching heuristics for non-`(#123)` merge formats
 - Add CI guidance and publish release notes helpers
 
 ## Contributing

@@ -18,11 +18,17 @@ export type GitHubEnrichmentResult = {
   warnings: string[];
 };
 
+const PULL_REQUEST_PATTERNS = [
+  /\(#(?<number>\d+)\)(?:\s*[.!?])?\s*$/,
+  /\bpull request #(?<number>\d+)\b/i
+] as const;
+
 export async function enrichWithGitHub(
   entries: ChangelogEntry[],
-  cwd: string
+  cwd: string,
+  env?: NodeJS.ProcessEnv
 ): Promise<GitHubEnrichmentResult> {
-  const available = await hasAuthenticatedGitHubCli(cwd);
+  const available = await hasAuthenticatedGitHubCli(cwd, env);
   if (!available) {
     return {
       entries,
@@ -44,7 +50,7 @@ export async function enrichWithGitHub(
       const { stdout } = await execFileAsync(
         "gh",
         ["pr", "view", prNumber, "--json", "title,url,author"],
-        { cwd, encoding: "utf8", maxBuffer: 1024 * 1024 }
+        { cwd, encoding: "utf8", maxBuffer: 1024 * 1024, env: env ?? process.env }
       );
       const pr = JSON.parse(stdout) as GitHubPr;
       enrichedEntries.push({
@@ -63,10 +69,11 @@ export async function enrichWithGitHub(
   return { entries: enrichedEntries, warnings };
 }
 
-async function hasAuthenticatedGitHubCli(cwd: string): Promise<boolean> {
+async function hasAuthenticatedGitHubCli(cwd: string, env?: NodeJS.ProcessEnv): Promise<boolean> {
+  const options = { cwd, encoding: "utf8" as const, env: env ?? process.env };
   try {
-    await execFileAsync("gh", ["--version"], { cwd, encoding: "utf8" });
-    await execFileAsync("gh", ["auth", "status"], { cwd, encoding: "utf8" });
+    await execFileAsync("gh", ["--version"], options);
+    await execFileAsync("gh", ["auth", "status"], options);
     return true;
   } catch {
     return false;
@@ -74,9 +81,12 @@ async function hasAuthenticatedGitHubCli(cwd: string): Promise<boolean> {
 }
 
 export function findPullRequestNumber(summary: string): string | null {
-  return (
-    summary.match(/\(#(?<number>\d+)\)\s*$/)?.groups?.number ??
-    summary.match(/\bpull request #(?<number>\d+)\b/i)?.groups?.number ??
-    null
-  );
+  for (const pattern of PULL_REQUEST_PATTERNS) {
+    const number = summary.match(pattern)?.groups?.number;
+    if (number) {
+      return number;
+    }
+  }
+
+  return null;
 }

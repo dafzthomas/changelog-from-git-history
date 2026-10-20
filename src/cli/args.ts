@@ -13,6 +13,7 @@ export type CliOptions = {
   help: boolean;
   version: boolean;
   categories?: ReadonlySet<ChangeCategory>;
+  releaseVersion?: string;
 };
 
 const FORMATS = new Set<OutputFormat>(["markdown", "json"]);
@@ -81,9 +82,21 @@ export function parseCliArgs(argv: string[]): CliOptions {
         options.help = true;
         break;
       case "--version":
-      case "-v":
-        options.version = true;
+      case "-v": {
+        const next = argv[index + 1];
+        if (next && !next.startsWith("-")) {
+          if (options.version) {
+            throw new Error("Use either --version or --version <version>, not both.");
+          }
+          options.releaseVersion = next;
+          index += 1;
+        } else if (options.releaseVersion) {
+          throw new Error("Use either --version or --version <version>, not both.");
+        } else {
+          options.version = true;
+        }
         break;
+      }
       default:
         throw new Error(`Unknown option "${arg}".`);
     }
@@ -134,6 +147,6 @@ Options:
   --github                   Try to enrich output with GitHub PR metadata
   --dry-run                  Preview output without writing files
   --help, -h                 Show help
-  --version, -v              Show version
+  --version, -v [version]    Show the CLI version, or set the release heading
 `;
 }

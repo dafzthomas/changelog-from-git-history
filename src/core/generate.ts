@@ -19,6 +19,8 @@ export type GenerateChangelogOptions = {
   github?: boolean;
   date?: string;
   categories?: ReadonlySet<ChangeCategory>;
+  env?: NodeJS.ProcessEnv;
+  version?: string;
 };
 
 export type GenerateChangelogResult = {
@@ -64,6 +66,7 @@ export async function generateChangelog(
       : firstSeenAuthors(enrichment.entries);
 
   const data: ChangelogData = {
+    ...(options.version ? { version: options.version } : {}),
     date: options.date ?? new Date().toISOString().slice(0, 10),
     range: resolvedRange.displayRange,
     entries: enrichment.entries,
@@ -109,5 +112,5 @@ async function resolveGitHubEnrichment(
     };
   }
 
-  return enrichWithGitHub(entries, options.cwd);
+  return enrichWithGitHub(entries, options.cwd, options.env);
 }
