@@ -190,6 +190,10 @@ The CLI still classifies these into useful buckets (for example Features, Fixes,
 - If no GitHub link is available (non-GitHub remote), it still renders cleanly and omits links.
 - Entry order is stable enough for review and release notes, with breaking changes promoted first.
 
+## Covered repository shapes
+
+Local fixture tests cover squash merges, repositories with no tags, non-GitHub remotes, breaking-change footers, and one small project history. [Repository shapes](docs/repo-shapes.md) lists each history. Those tests do not use the network.
+
 ## Development checks
 
 ```bash
