@@ -110,11 +110,11 @@ A sample body is in `examples/release-notes.md`:
 
 ### Breaking Changes
 
-* Changed the auth token format. API clients must send Bearer tokens. by Alice in [abc1234](https://github.com/acme/tool/commit/abc123456)
+* Changed the auth token format. API clients must send Bearer tokens by Alice in [abc1234](https://github.com/acme/tool/commit/abc123456)
 
 ### Features
 
-* Added import support for JSONL usage logs. by @bob in [#14](https://github.com/acme/tool/pull/14)
+* Added import support for JSONL usage logs by @bob in [#14](https://github.com/acme/tool/pull/14)
 
 ## Contributors
 

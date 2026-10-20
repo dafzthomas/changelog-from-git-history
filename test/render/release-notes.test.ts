@@ -43,6 +43,10 @@ describe("renderReleaseNotes", () => {
 
     expect(notes).toBe(example);
     expect(readme).toContain(example.trimEnd());
+    expect(notes).toContain(
+      "* Added import support for JSONL usage logs by @bob in [#14](https://github.com/acme/tool/pull/14)"
+    );
+    expect(notes).not.toContain(". by ");
     expect(notes).not.toContain("1.2.3");
     expect(notes).not.toContain("2026-06-01");
     expect(notes).not.toContain("No semver-like tag found");
@@ -79,7 +83,7 @@ describe("renderReleaseNotes", () => {
 
 ### Breaking Changes
 
-* Change the config format. by Casey in [abc1234](https://gitlab.com/acme/tool/commit/abc123456)
+* Change the config format by Casey in [abc1234](https://gitlab.com/acme/tool/commit/abc123456)
 
 ## Contributors
 

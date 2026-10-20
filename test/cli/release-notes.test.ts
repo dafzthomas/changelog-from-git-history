@@ -84,15 +84,15 @@ describe("release notes CLI", () => {
 
 ### Breaking Changes
 
-* Change config file format. Config files must use JSON. by Riley in ${repo.fix}
+* Change config file format. Config files must use JSON by Riley in ${repo.fix}
 
 ### Features
 
-* Add export command. by Riley in ${repo.feature}
+* Add export command by Riley in ${repo.feature}
 
 ### Documentation
 
-* Update the readme. by Riley in ${repo.docs}
+* Update the readme by Riley in ${repo.docs}
 
 ## Contributors
 

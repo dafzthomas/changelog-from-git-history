@@ -38,17 +38,18 @@ export function renderReleaseNotes(data: ChangelogData): string {
 
 function renderEntry(entry: ChangelogEntry): string {
   const breakingDescription = entry.breakingDescription?.trim();
-  const detail =
+  const detailText =
     breakingDescription && breakingDescription !== GENERIC_BREAKING_DESCRIPTION
-      ? ` ${sentence(breakingDescription)}`
+      ? phrase(breakingDescription)
       : "";
+  const summary = detailText ? `${phrase(entry.summary)}.` : phrase(entry.summary);
+  const detail = detailText ? ` ${detailText}` : "";
 
-  return `* ${sentence(entry.summary)}${detail}${attribution(entry)}`;
+  return `* ${summary}${detail}${attribution(entry)}`;
 }
 
-function sentence(summary: string): string {
-  const trimmed = summary.trim().replace(/[.!?]+$/, "");
-  return `${trimmed}.`;
+function phrase(text: string): string {
+  return text.trim().replace(/[.!?]+$/, "");
 }
 
 function attribution(entry: ChangelogEntry): string {
