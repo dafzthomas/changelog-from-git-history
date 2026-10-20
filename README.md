@@ -96,6 +96,38 @@ changelog-from-git-history --format json
 changelog-from-git-history --format json --output release-notes.json
 ```
 
+### `--include <categories>`
+
+Keep only these categories.
+
+Category ids follow the default section order. They are `features`, `fixes`, `documentation`, `performance`, `refactors`, `tests`, `build`, `dependencies`, `maintenance`, and `other`. The docs id is `documentation`.
+
+Separate ids with commas. Spaces around commas are optional. Repeat `--include` to add ids.
+
+An unknown category name fails before Git runs.
+
+```bash
+changelog-from-git-history --include features,fixes
+changelog-from-git-history --include features --include documentation
+```
+
+### `--exclude <categories>`
+
+Drop these categories. Use the same category ids as `--include`.
+
+Separate ids with commas. Spaces around commas are optional. Repeat `--exclude` to add ids.
+
+`--include` and `--exclude` can be used together. The command keeps the included ids, then removes the excluded ids. Omit `--include` to start from every id.
+
+Markdown and JSON use the same selection. JSON stays a `ChangelogData` object. Dropped entries are absent.
+
+A breaking change stays in the first section when its category is included. The command omits that change when its category is excluded.
+
+```bash
+changelog-from-git-history --exclude tests,build,maintenance
+changelog-from-git-history --include features,fixes,documentation --exclude documentation
+```
+
 ### `--github`
 
 Replaces a matching commit subject with the GitHub pull request title. The CLI calls `gh` only when you pass this flag.
@@ -207,7 +239,6 @@ npm run build
 ## Roadmap
 
 - Add richer templates for Markdown/JSON consumers
-- Add optional section toggles and filtering by type
 - Add CI guidance and publish release notes helpers
 
 ## Contributing

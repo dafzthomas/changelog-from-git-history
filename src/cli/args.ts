@@ -1,3 +1,5 @@
+import { CATEGORY_ORDER, parseCategoryName, type ChangeCategory } from "../core/categories.js";
+
 export type OutputFormat = "markdown" | "json";
 
 export type CliOptions = {
@@ -10,6 +12,7 @@ export type CliOptions = {
   dryRun: boolean;
   help: boolean;
   version: boolean;
+  categories?: ReadonlySet<ChangeCategory>;
   releaseVersion?: string;
 };
 
@@ -24,6 +27,10 @@ export function parseCliArgs(argv: string[]): CliOptions {
     help: false,
     version: false
   };
+  let includeSeen = false;
+  let excludeSeen = false;
+  const included = new Set<ChangeCategory>();
+  const excluded = new Set<ChangeCategory>();
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -48,6 +55,20 @@ export function parseCliArgs(argv: string[]): CliOptions {
           throw new Error(`Unsupported format "${format}". Expected markdown or json.`);
         }
         options.format = format as OutputFormat;
+        break;
+      }
+      case "--include": {
+        includeSeen = true;
+        for (const category of readCategories(readValue(argv, ++index, "--include"))) {
+          included.add(category);
+        }
+        break;
+      }
+      case "--exclude": {
+        excludeSeen = true;
+        for (const category of readCategories(readValue(argv, ++index, "--exclude"))) {
+          excluded.add(category);
+        }
         break;
       }
       case "--github":
@@ -85,7 +106,21 @@ export function parseCliArgs(argv: string[]): CliOptions {
     throw new Error("Use either --since or --range, not both.");
   }
 
+  if (includeSeen || excludeSeen) {
+    const categories = new Set<ChangeCategory>();
+    for (const category of CATEGORY_ORDER) {
+      if ((!includeSeen || included.has(category)) && !excluded.has(category)) {
+        categories.add(category);
+      }
+    }
+    options.categories = categories;
+  }
+
   return options;
+}
+
+function readCategories(value: string): ChangeCategory[] {
+  return value.split(",").map((segment) => parseCategoryName(segment));
 }
 
 function readValue(argv: string[], index: number, flag: string): string {
@@ -107,6 +142,8 @@ Options:
   --output, -o <file>        Write or update a changelog file
   --stdout                   Print only the generated output
   --format <markdown|json>   Output format (default: markdown)
+  --include <categories>     Keep only these categories, comma-separated
+  --exclude <categories>     Drop these categories, comma-separated
   --github                   Try to enrich output with GitHub PR metadata
   --dry-run                  Preview output without writing files
   --help, -h                 Show help

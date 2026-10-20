@@ -45,6 +45,7 @@ export async function runCli(argv = process.argv.slice(2), runtime: CliRuntime =
       range: options.range,
       format: options.format,
       github: options.github,
+      ...(options.categories !== undefined ? { categories: options.categories } : {}),
       env: runtime.env,
       version: options.releaseVersion
     });
