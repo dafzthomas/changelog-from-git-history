@@ -49,6 +49,7 @@ describe("generateChangelog", () => {
       format: "markdown"
     });
 
+    expect(result.data.version).toBeUndefined();
     expect(result.content).toContain("## Unreleased - 2026-06-01");
     expect(result.content).toContain("<!-- changelog-from-git-history: v1.0.0..HEAD -->");
     expect(result.content).toContain("### Breaking Changes");
@@ -58,6 +59,22 @@ describe("generateChangelog", () => {
     );
     expect(result.content).toContain("### Contributors\n\n- Casey");
     expect(result.data.entries).toHaveLength(2);
+  });
+
+  it("labels the markdown heading with an explicit release version", async () => {
+    const cwd = createRepo();
+    commitFile(cwd, "file.txt", "one", "feat: ship export");
+
+    const result = await generateChangelog({
+      cwd,
+      date: "2026-06-01",
+      version: "1.2.3",
+      format: "markdown"
+    });
+
+    expect(result.content.startsWith("## 1.2.3 - 2026-06-01\n")).toBe(true);
+    expect(result.content).not.toContain("Unreleased");
+    expect(result.data.version).toBe("1.2.3");
   });
 
   it("can render JSON output", async () => {

@@ -52,6 +52,8 @@ describe("runCli", () => {
 
     await expect(runCli(["--help"], io)).resolves.toBe(0);
     expect(io.stdoutText).toContain("Usage: changelog-from-git-history");
+    expect(io.stdoutText).toContain("--version, -v [version]");
+    expect(io.stdoutText).toContain("set the release heading");
 
     const versionIo = createIo("/tmp");
     await expect(runCli(["--version"], versionIo)).resolves.toBe(0);
@@ -100,6 +102,41 @@ describe("runCli", () => {
     expect(readFileSync(output, "utf8")).toContain("# Changelog\n\n## Unreleased - ");
     expect(io.stdoutText).toBe("");
     expect(io.stderrText).toContain("Wrote CHANGELOG.md");
+  });
+
+  it("labels the section with --version and leaves the rest of the output unchanged", async () => {
+    const cwd = createRepo();
+    const plain = createIo(cwd);
+    const released = createIo(cwd);
+
+    await expect(runCli([], plain)).resolves.toBe(0);
+    await expect(runCli(["--version", "1.2.3"], released)).resolves.toBe(0);
+
+    const plainHeading = plain.stdoutText.match(/^## .+$/m)?.[0];
+    const releasedHeading = released.stdoutText.match(/^## .+$/m)?.[0];
+
+    expect(plainHeading).toMatch(/^## Unreleased - \d{4}-\d{2}-\d{2}$/);
+    expect(releasedHeading).toMatch(/^## 1\.2\.3 - \d{4}-\d{2}-\d{2}$/);
+    expect(released.stdoutText).not.toContain("Unreleased");
+    expect(released.stdoutText).not.toBe("0.1.0\n");
+    expect(released.stdoutText.replace(releasedHeading ?? "", plainHeading ?? "")).toBe(plain.stdoutText);
+  });
+
+  it("writes a versioned changelog once and skips the same range on the next run", async () => {
+    const cwd = createRepo();
+    const output = join(cwd, "CHANGELOG.md");
+    const io = createIo(cwd);
+
+    await expect(runCli(["--version", "1.2.3", "--output", "CHANGELOG.md"], io)).resolves.toBe(0);
+
+    const written = readFileSync(output, "utf8");
+    expect(written).toMatch(/^# Changelog\n\n## 1\.2\.3 - \d{4}-\d{2}-\d{2}\n/);
+    expect(written).not.toContain("## Unreleased");
+
+    const again = createIo(cwd);
+    await expect(runCli(["--version", "1.2.3", "--output", "CHANGELOG.md"], again)).resolves.toBe(0);
+    expect(readFileSync(output, "utf8")).toBe(written);
+    expect(again.stderrText).toContain("Wrote CHANGELOG.md");
   });
 
   it("fails clearly outside a Git repository", async () => {

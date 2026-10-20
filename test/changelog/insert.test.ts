@@ -60,4 +60,56 @@ ${generated}
 
     expect(insertChangelogSection(existing, updated)).toBe(existing);
   });
+
+  it("does not insert a versioned section when that range is already present", () => {
+    const existing = `# Changelog
+
+## Unreleased - 2026-06-01
+
+<!-- changelog-from-git-history: v1.2.2..HEAD -->
+
+### Features
+
+- Older render.
+`;
+    const released = `## 1.2.3 - 2026-06-02
+
+<!-- changelog-from-git-history: v1.2.2..HEAD -->
+
+### Features
+
+- Released render.
+`;
+
+    expect(insertChangelogSection(existing, released)).toBe(existing);
+  });
+
+  it("inserts a versioned section for a new range above existing releases", () => {
+    const existing = `# Changelog
+
+## 1.2.2 - 2026-05-01
+
+<!-- changelog-from-git-history: v1.2.1..v1.2.2 -->
+
+- Previous.
+`;
+    const generated = `## 1.2.3 - 2026-06-01
+
+<!-- changelog-from-git-history: v1.2.2..HEAD -->
+
+### Features
+
+- Added export.
+`;
+
+    expect(insertChangelogSection(existing, generated)).toBe(`# Changelog
+
+${generated}
+## 1.2.2 - 2026-05-01
+
+<!-- changelog-from-git-history: v1.2.1..v1.2.2 -->
+
+- Previous.
+`);
+  });
 });
