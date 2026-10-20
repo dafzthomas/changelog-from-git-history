@@ -1,6 +1,5 @@
 import { CATEGORY_ORDER, parseCategoryName, type ChangeCategory } from "../core/categories.js";
-
-export type OutputFormat = "markdown" | "json";
+import { isOutputFormat, OUTPUT_FORMATS, outputFormatList, type OutputFormat } from "../core/format.js";
 
 export type CliOptions = {
   since?: string;
@@ -15,8 +14,6 @@ export type CliOptions = {
   categories?: ReadonlySet<ChangeCategory>;
   releaseVersion?: string;
 };
-
-const FORMATS = new Set<OutputFormat>(["markdown", "json"]);
 
 export function parseCliArgs(argv: string[]): CliOptions {
   const options: CliOptions = {
@@ -51,10 +48,10 @@ export function parseCliArgs(argv: string[]): CliOptions {
         break;
       case "--format": {
         const format = readValue(argv, ++index, "--format");
-        if (!FORMATS.has(format as OutputFormat)) {
-          throw new Error(`Unsupported format "${format}". Expected markdown or json.`);
+        if (!isOutputFormat(format)) {
+          throw new Error(`Unsupported format "${format}". Expected ${outputFormatList()}.`);
         }
-        options.format = format as OutputFormat;
+        options.format = format;
         break;
       }
       case "--include": {
@@ -141,12 +138,14 @@ Options:
   --range <from..to>         Generate for an explicit Git revision range
   --output, -o <file>        Write or update a changelog file
   --stdout                   Print only the generated output
-  --format <markdown|json>   Output format (default: markdown)
+  --format <${OUTPUT_FORMATS.join("|")}>  Output format (default: markdown)
   --include <categories>     Keep only these categories, comma-separated
   --exclude <categories>     Drop these categories, comma-separated
   --github                   Try to enrich output with GitHub PR metadata
   --dry-run                  Preview output without writing files
   --help, -h                 Show help
-  --version, -v [version]    Show the CLI version, or set the release heading
+  --version, -v [version]    Bare --version prints the CLI version; --version <v> sets data.version (the markdown heading and the JSON version field). Release notes print no version heading.
+
+Bare --version prints the CLI version. --version <v> sets data.version (the markdown heading and the JSON version field) and can set the release heading. --format release-notes does not print one.
 `;
 }

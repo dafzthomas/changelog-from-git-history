@@ -33,6 +33,10 @@ describe("parseCliArgs", () => {
     );
   });
 
+  it("accepts the release-notes format", () => {
+    expect(parseCliArgs(["--format", "release-notes"]).format).toBe("release-notes");
+  });
+
   it("reads a release version after --version and -v", () => {
     expect(parseCliArgs(["--version", "1.2.3"])).toEqual({
       stdout: false,
